@@ -22,6 +22,7 @@ fun HomeScreen(
     var enabledModes by remember { mutableStateOf<List<String>>(emptyList()) }
     var activeMode by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
+    var workouts by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
 
     // Load profile once
     LaunchedEffect(Unit) {
@@ -40,6 +41,21 @@ fun HomeScreen(
                 }
                 .addOnFailureListener {
                     isLoading = false
+                }
+
+            firestore.collection("users")
+                .document(uid)
+                .collection("workouts")
+                .orderBy("createdAt", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .addSnapshotListener { snapshot, _ ->
+                    if (snapshot != null) {
+                        workouts = snapshot.documents.map {
+                            Pair(
+                                it.getString("name") ?: "",
+                                it.getString("notes") ?: ""
+                            )
+                        }
+                    }
                 }
         }
     }
@@ -129,6 +145,37 @@ fun HomeScreen(
                         onClick = { onAddWorkoutClick() }
                     ) {
                         Text("Add Workout")
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = "My Workouts",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    if (workouts.isEmpty()) {
+                        Text("No workouts yet.")
+                    } else {
+                        workouts.forEach { workout ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = workout.first,
+                                        style = MaterialTheme.typography.titleSmall
+                                    )
+                                    if (workout.second.isNotEmpty()) {
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(workout.second)
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
