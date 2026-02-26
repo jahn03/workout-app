@@ -1,6 +1,8 @@
 package com.example.workoutapp.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -8,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 
 @Composable
 fun HomeScreen(
@@ -28,6 +31,7 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         val uid = auth.currentUser?.uid
         if (uid != null) {
+
             firestore.collection("users")
                 .document(uid)
                 .get()
@@ -46,7 +50,7 @@ fun HomeScreen(
             firestore.collection("users")
                 .document(uid)
                 .collection("workouts")
-                .orderBy("createdAt", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .orderBy("createdAt", Query.Direction.DESCENDING)
                 .addSnapshotListener { snapshot, _ ->
                     if (snapshot != null) {
                         workouts = snapshot.documents.map {
@@ -89,7 +93,7 @@ fun HomeScreen(
             )
 
             Button(onClick = {
-                FirebaseAuth.getInstance().signOut()
+                auth.signOut()
                 onLogout()
             }) {
                 Text("Logout")
@@ -132,43 +136,49 @@ fun HomeScreen(
             }
 
             "personal" -> {
-                Column {
 
-                    Text(
-                        text = "Personal Workout View 💪",
-                        style = MaterialTheme.typography.titleLarge
-                    )
+                Text(
+                    text = "Personal Workout View 💪",
+                    style = MaterialTheme.typography.titleLarge
+                )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                    Button(
-                        onClick = { onAddWorkoutClick() }
+                Button(onClick = { onAddWorkoutClick() }) {
+                    Text("Add Workout")
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = "My Workouts",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (workouts.isEmpty()) {
+                    Text("No workouts yet.")
+                } else {
+
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Add Workout")
-                    }
-                    Spacer(modifier = Modifier.height(24.dp))
+                        items(workouts) { workout ->
 
-                    Text(
-                        text = "My Workouts",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    if (workouts.isEmpty()) {
-                        Text("No workouts yet.")
-                    } else {
-                        workouts.forEach { workout ->
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 4.dp)
                             ) {
-                                Column(modifier = Modifier.padding(12.dp)) {
+                                Column(
+                                    modifier = Modifier.padding(12.dp)
+                                ) {
                                     Text(
                                         text = workout.first,
                                         style = MaterialTheme.typography.titleSmall
                                     )
+
                                     if (workout.second.isNotEmpty()) {
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(workout.second)
