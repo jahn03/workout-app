@@ -1,30 +1,28 @@
 package com.example.workoutapp
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
 import androidx.compose.material3.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import com.example.workoutapp.ui.theme.WorkoutAppTheme
 import com.example.workoutapp.ui.screens.AuthScreen
 import com.example.workoutapp.ui.screens.OnboardingScreen
+import com.example.workoutapp.ui.screens.HomeScreen
+import com.example.workoutapp.ui.screens.AddWorkoutScreen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import androidx.compose.foundation.layout.*
-import androidx.compose.ui.unit.dp
-import com.example.workoutapp.ui.screens.HomeScreen
-
 
 enum class AppScreen {
     LOADING,
     AUTH,
     ONBOARDING,
-    HOME
+    HOME,
+    ADD_WORKOUT
 }
 
 class MainActivity : ComponentActivity() {
@@ -43,7 +41,7 @@ class MainActivity : ComponentActivity() {
                     mutableStateOf(AppScreen.LOADING)
                 }
 
-                //  Auto-check when app launches
+                // Auto-check on launch
                 LaunchedEffect(Unit) {
 
                     val currentUser = auth.currentUser
@@ -51,12 +49,10 @@ class MainActivity : ComponentActivity() {
                     if (currentUser == null) {
                         currentScreen = AppScreen.AUTH
                     } else {
-
                         firestore.collection("users")
                             .document(currentUser.uid)
                             .get()
                             .addOnSuccessListener { document ->
-
                                 if (document.exists()) {
                                     currentScreen = AppScreen.HOME
                                 } else {
@@ -103,10 +99,23 @@ class MainActivity : ComponentActivity() {
                         HomeScreen(
                             onLogout = {
                                 currentScreen = AppScreen.AUTH
+                            },
+                            onAddWorkoutClick = {
+                                currentScreen = AppScreen.ADD_WORKOUT
                             }
                         )
                     }
 
+                    AppScreen.ADD_WORKOUT -> {
+                        AddWorkoutScreen(
+                            onSaveComplete = {
+                                currentScreen = AppScreen.HOME
+                            },
+                            onCancel = {
+                                currentScreen = AppScreen.HOME
+                            }
+                        )
+                    }
                 }
             }
         }

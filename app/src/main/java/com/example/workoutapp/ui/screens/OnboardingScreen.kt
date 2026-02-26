@@ -14,7 +14,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
     val auth = FirebaseAuth.getInstance()
     val firestore = FirebaseFirestore.getInstance()
 
-    var selectedMode by remember { mutableStateOf("trainer") }
+    var selectedMode by remember { mutableStateOf("coach") }
     var isSaving by remember { mutableStateOf(false) }
 
     Column(
@@ -33,8 +33,8 @@ fun OnboardingScreen(onComplete: () -> Unit) {
 
         Row {
             RadioButton(
-                selected = selectedMode == "trainer",
-                onClick = { selectedMode = "trainer" }
+                selected = selectedMode == "coach",
+                onClick = { selectedMode = "coach" }
             )
             Text("Train Clients")
         }
@@ -65,9 +65,9 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                 isSaving = true
 
                 val enabledModes = when (selectedMode) {
-                    "trainer" -> listOf("trainer", "personal")
+                    "coach" -> listOf("coach", "personal")
                     "personal" -> listOf("personal")
-                    "both" -> listOf("trainer", "personal")
+                    "both" -> listOf("coach", "personal")
                     else -> listOf("personal")
                 }
 

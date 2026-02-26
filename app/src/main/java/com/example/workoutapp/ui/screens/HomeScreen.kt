@@ -10,7 +10,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun HomeScreen(onLogout: () -> Unit) {
+fun HomeScreen(
+    onLogout: () -> Unit,
+    onAddWorkoutClick: () -> Unit
+) {
 
     val auth = FirebaseAuth.getInstance()
     val firestore = FirebaseFirestore.getInstance()
@@ -20,7 +23,7 @@ fun HomeScreen(onLogout: () -> Unit) {
     var activeMode by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
 
-    //  Load profile once
+    // Load profile once
     LaunchedEffect(Unit) {
         val uid = auth.currentUser?.uid
         if (uid != null) {
@@ -57,7 +60,7 @@ fun HomeScreen(onLogout: () -> Unit) {
             .padding(16.dp)
     ) {
 
-        //  Top Bar Section
+        // Top Bar
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -79,20 +82,20 @@ fun HomeScreen(onLogout: () -> Unit) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        //  Mode Selector
+        // Mode Selector
         if (enabledModes.isNotEmpty()) {
 
             Text("Active Mode:")
             Spacer(modifier = Modifier.height(8.dp))
 
             enabledModes.forEach { mode ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+
                     RadioButton(
                         selected = activeMode == mode,
                         onClick = { activeMode = mode }
                     )
+
                     Text(mode.replaceFirstChar { it.uppercase() })
                 }
             }
@@ -100,12 +103,12 @@ fun HomeScreen(onLogout: () -> Unit) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        //  Render Mode-Specific Content
+        // Mode-Specific Content
         when (activeMode) {
 
-            "trainer" -> {
+            "coach" -> {
                 Text(
-                    text = "Trainer Dashboard 🏋️",
+                    text = "Coach Dashboard",
                     style = MaterialTheme.typography.titleLarge
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -113,12 +116,21 @@ fun HomeScreen(onLogout: () -> Unit) {
             }
 
             "personal" -> {
-                Text(
-                    text = "Personal Workout View 💪",
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Log workouts and track your own progress.")
+                Column {
+
+                    Text(
+                        text = "Personal Workout View 💪",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Button(
+                        onClick = { onAddWorkoutClick() }
+                    ) {
+                        Text("Add Workout")
+                    }
+                }
             }
 
             else -> {
