@@ -11,6 +11,8 @@ import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.example.workoutapp.ui.model.Workout
+
 
 @Composable
 fun HomeScreen(
@@ -25,7 +27,7 @@ fun HomeScreen(
     var enabledModes by remember { mutableStateOf<List<String>>(emptyList()) }
     var activeMode by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
-    var workouts by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
+    var workouts by remember { mutableStateOf<List<Workout>>(emptyList()) }
 
     // Load profile once
     LaunchedEffect(Unit) {
@@ -54,9 +56,10 @@ fun HomeScreen(
                 .addSnapshotListener { snapshot, _ ->
                     if (snapshot != null) {
                         workouts = snapshot.documents.map {
-                            Pair(
-                                it.getString("name") ?: "",
-                                it.getString("notes") ?: ""
+                            Workout(
+                                id = it.id,
+                                name = it.getString("name") ?: "",
+                                notes = it.getString("notes") ?: ""
                             )
                         }
                     }
@@ -175,13 +178,13 @@ fun HomeScreen(
                                     modifier = Modifier.padding(12.dp)
                                 ) {
                                     Text(
-                                        text = workout.first,
+                                        text = workout.name,
                                         style = MaterialTheme.typography.titleSmall
                                     )
 
-                                    if (workout.second.isNotEmpty()) {
+                                    if (workout.notes.isNotEmpty()) {
                                         Spacer(modifier = Modifier.height(4.dp))
-                                        Text(workout.second)
+                                        Text(workout.notes)
                                     }
                                 }
                             }
